@@ -1,0 +1,13 @@
+[package]
+name = "trident-syscall-stubs-v1"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+solana-program = "1.18.26"
+solana-sdk = "~2.0.5"
+solana-program-runtime = "~2.0.5"
+serde = { version = "1", default-features = false }
+solana-bpf-loader-program = "~2.0.5"
+solana_rbpf = "*"
+solana-logger = "1.18.26"

@@ -1,29 +1,33 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
-use solana_program::program_error::ProgramError;
-use solana_sdk::{account_info::AccountInfo, pubkey::Pubkey};
 use std::mem::transmute;
+use std::sync::Arc;
+use std::sync::Once;
 
+use solana_sdk::account_info::AccountInfo;
+use solana_sdk::entrypoint::SUCCESS;
+use solana_sdk::instruction::Instruction;
 use solana_sdk::instruction::InstructionError;
+use solana_sdk::program_error::UNSUPPORTED_SYSVAR;
+use solana_sdk::pubkey::Pubkey;
+use solana_sdk::stable_layout::stable_instruction::StableInstruction;
+use solana_sdk::sysvar::Sysvar;
+
+use solana_program::program_error::ProgramError;
+use solana_program::program_stubs;
+use solana_program::program_stubs::set_syscall_stubs;
 
 use solana_program_runtime::stable_log;
-
-use std::sync::Arc;
-
-use solana_program::program_stubs;
 use solana_program_runtime::timings::ExecuteTimings;
-use solana_sdk::{
-    entrypoint::SUCCESS, program_error::UNSUPPORTED_SYSVAR,
-    stable_layout::stable_instruction::StableInstruction, sysvar::Sysvar,
-};
-
-pub use solana_program_runtime::invoke_context::InvokeContext;
-pub use solana_rbpf;
-pub use solana_rbpf::vm::get_runtime_environment_key;
-pub use solana_rbpf::vm::EbpfVm;
-
-use solana_sdk::instruction::Instruction;
 
 use crate::get_invoke_context;
+
+static ONCE: Once = Once::new();
+
+pub fn set_stubs_v1() {
+    ONCE.call_once(|| {
+        set_syscall_stubs(Box::new(TridentSyscallStubs {}));
+    });
+}
 
 fn get_sysvar<T: Default + Sysvar + Sized + serde::de::DeserializeOwned + Clone>(
     sysvar: Result<Arc<T>, InstructionError>,

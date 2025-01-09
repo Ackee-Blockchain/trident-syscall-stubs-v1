@@ -108,35 +108,38 @@ impl program_stubs::SyscallStubs for TridentSyscallStubs {
         let invoke_context = get_invoke_context();
         let log_collector = invoke_context.get_log_collector();
         let transaction_context = &invoke_context.transaction_context;
+
+        // TODO: Handle the unwrap
         let instruction_context = transaction_context
             .get_current_instruction_context()
             .unwrap();
+
+        // TODO: Handle the unwrap
         let caller = instruction_context
             .get_last_program_key(transaction_context)
             .unwrap();
-
-        stable_log::program_invoke(
-            &log_collector,
-            &instruction.program_id,
-            invoke_context.get_stack_height(),
-        );
 
         let signers = signers_seeds
             .iter()
             .map(|seeds| Pubkey::create_program_address(seeds, caller).unwrap())
             .collect::<Vec<_>>();
 
+        // TODO: Handle the unwrap
         let (instruction_accounts, program_indices) = invoke_context
             .prepare_instruction(&instruction, &signers)
             .unwrap();
 
         // Copy caller's account_info modifications into invoke_context accounts
         let transaction_context = &invoke_context.transaction_context;
+
+        // TODO: Handle the unwrap
         let instruction_context = transaction_context
             .get_current_instruction_context()
             .unwrap();
 
         let mut account_indices = Vec::with_capacity(instruction_accounts.len());
+
+        // TODO: Handle the unwrap in the whole loop
         for instruction_account in instruction_accounts.iter() {
             let account_key = transaction_context
                 .get_key_of_account_at_index(instruction_account.index_in_transaction)
@@ -185,6 +188,12 @@ impl program_stubs::SyscallStubs for TridentSyscallStubs {
 
         let mut compute_units_consumed = 0;
 
+        stable_log::program_invoke(
+            &log_collector,
+            &instruction.program_id,
+            invoke_context.get_stack_height(),
+        );
+
         invoke_context
             .process_instruction(
                 &instruction.data,
@@ -197,9 +206,13 @@ impl program_stubs::SyscallStubs for TridentSyscallStubs {
 
         // Copy invoke_context accounts modifications into caller's account_info
         let transaction_context = &invoke_context.transaction_context;
+
+        // TODO: Handle the unwrap
         let instruction_context = transaction_context
             .get_current_instruction_context()
             .unwrap();
+
+        // TODO: Handle the unwrap in the whole loop
         for (index_in_caller, account_info_index) in account_indices.into_iter() {
             let borrowed_account = instruction_context
                 .try_borrow_instruction_account(transaction_context, index_in_caller)
